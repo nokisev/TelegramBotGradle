@@ -1,19 +1,17 @@
 package org.nokisev.PaymentProBot;
 
+import org.nokisev.PaymentProBot.config.BotConfig;
 import org.nokisev.PaymentProBot.service.GoogleApiService;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.User;
-import org.telegram.telegrambots.meta.api.objects.chatmember.ChatMember;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import org.nokisev.PaymentProBot.config.BotConfig;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -35,7 +33,7 @@ public class TelegramBot extends TelegramLongPollingBot  {
         try {
             this.execute(new SetMyCommands(listOfCommands, new BotCommandScopeDefault(), null));
         } catch (TelegramApiException e) {
-
+            throw new RuntimeException(e);
         }
     }
 
@@ -68,13 +66,18 @@ public class TelegramBot extends TelegramLongPollingBot  {
                     System.out.println(userId + " use mydata");
                     try {
                         sendMessage(chatId, GoogleApiService.SpreadSheetsRead(userId));
-                    } catch (GeneralSecurityException e) {
-                        throw new RuntimeException(e);
-                    } catch (IOException e) {
+                    } catch (GeneralSecurityException | IOException e) {
                         throw new RuntimeException(e);
                     }
                     break;
                 case "/lead":
+                    userId = update.getMessage().getFrom().getUserName();
+                    System.out.println(userId + " use lead");
+                    try {
+                        sendMessage(chatId, GoogleApiService.SpreadSheetsWrite());
+                    } catch (GeneralSecurityException | IOException e) {
+                        throw new RuntimeException(e);
+                    }
                     break;
                 default:
                     break;

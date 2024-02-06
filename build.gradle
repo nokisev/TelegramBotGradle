@@ -23,6 +23,7 @@ dependencies {
 	implementation 'com.google.apis:google-api-services-sheets:v4-rev20220927-2.0.0'
 	implementation group: 'org.json', name: 'json', version: '20231013'
 	implementation group: 'org.telegram', name: 'telegrambots', version: '6.9.7.0'
+	implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.22.1'
 	compileOnly group: 'org.projectlombok', name: 'lombok', version: '1.18.30'
 }
 

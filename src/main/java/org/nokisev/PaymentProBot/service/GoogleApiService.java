@@ -75,10 +75,11 @@ public class GoogleApiService {
         }
     }
 
-    public static String SpreadSheetsWrite() throws GeneralSecurityException, IOException {
+    public static String SpreadSheetsWrite(String username, String userId, String[] msg) throws GeneralSecurityException, IOException {
         final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
         final String spreadSheetsId = "15WBRurm9KULlsk-x3ULDQ5llf146D8XZ0HqzGRHfk1k"; // TODO: Add your Sheet id here
-        final String allRange = "Salary!A2:F10";
+        final String allRange = "Salary!A2:C";
+
         Sheets service = new Sheets.Builder(HTTP_TRANSPORT, GoogleApiService.JSON_FACTORY, GoogleApiService.getCredentials(HTTP_TRANSPORT))
                 .setApplicationName(GoogleApiService.APPLICATION_NAME)
                 .build();
@@ -92,21 +93,48 @@ public class GoogleApiService {
         } else {
             ValueRange appendBody = new ValueRange()
                     .setValues(Arrays.asList(
-                            Arrays.asList("This", "was", "added", "from", "code!")
+                            Arrays.asList(username, "https://t.me/" + userId, msg[1])
                     ));
-
+            System.out.println("before res");
             AppendValuesResponse result =
                     service.spreadsheets().values().append(spreadSheetsId, "Salary", appendBody)
                             .setValueInputOption("USER_ENTERED")
                             .setInsertDataOption("INSERT_ROWS")
                             .setIncludeValuesInResponse(true)
                             .execute();
+            System.out.println("after res" + msg[1]);
+        }
+
+        return " p ";
+    }
+
+    public static String checkUser(String username, String userId, String[] msg)  throws GeneralSecurityException, IOException {
+        final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+        final String spreadSheetsId = "15WBRurm9KULlsk-x3ULDQ5llf146D8XZ0HqzGRHfk1k";
+        final String allRange = "Salary!A2:E";
+        Sheets service = new Sheets.Builder(HTTP_TRANSPORT, GoogleApiService.JSON_FACTORY, GoogleApiService.getCredentials(HTTP_TRANSPORT))
+                .setApplicationName(GoogleApiService.APPLICATION_NAME)
+                .build();
+        ValueRange response = service.spreadsheets().values()
+                .get(spreadSheetsId, allRange)
+                .execute();
+        List<List<Object>> values = response.getValues();
+        String resMsg = null;
+        if (values == null || values.isEmpty()) {
+            resMsg = "No data found";
+        } else {
             for (List row : values) {
-                if (String.valueOf(row.get(0)).contains("This")) {
-                    System.out.println(row);
+                if (String.valueOf(row.get(1)).contains(userId)) {
+                    resMsg = SpreadSheetsUpdate(username, userId, msg);
+                } else {
+                    resMsg = SpreadSheetsWrite(username, userId, msg);
                 }
             }
         }
-        return " p ";
+        return resMsg;
+    }
+
+    private static String SpreadSheetsUpdate(String username, String userId, String[] msg) {
+        return "not working";
     }
 }

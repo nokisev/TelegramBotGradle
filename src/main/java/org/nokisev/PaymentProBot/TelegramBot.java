@@ -53,7 +53,9 @@ public class TelegramBot extends TelegramLongPollingBot  {
             String msg = update.getMessage().getText();
             long chatId = update.getMessage().getChatId();
 
-            switch (msg) {
+            String[] shorterMsg = msg.split(" ");
+
+            switch (shorterMsg[0]) {
                 case "/start":
                     startCommandReceived(chatId, update.getMessage().getChat().getFirstName());
                     help(chatId);
@@ -63,6 +65,7 @@ public class TelegramBot extends TelegramLongPollingBot  {
                     break;
                 case "/mydata":
                     String userId = update.getMessage().getFrom().getUserName();
+                    String username = update.getMessage().getFrom().getFirstName() + update.getMessage().getFrom().getLastName();
                     System.out.println(userId + " use mydata");
                     try {
                         sendMessage(chatId, GoogleApiService.SpreadSheetsRead(userId));
@@ -72,9 +75,11 @@ public class TelegramBot extends TelegramLongPollingBot  {
                     break;
                 case "/lead":
                     userId = update.getMessage().getFrom().getUserName();
+                    username = update.getMessage().getFrom().getFirstName() + update.getMessage().getFrom().getLastName();
+
                     System.out.println(userId + " use lead");
                     try {
-                        sendMessage(chatId, GoogleApiService.SpreadSheetsWrite());
+                        sendMessage(chatId, GoogleApiService.checkUser(username, userId, shorterMsg));
                     } catch (GeneralSecurityException | IOException e) {
                         throw new RuntimeException(e);
                     }

@@ -78,7 +78,7 @@ public class GoogleApiService {
     public static String SpreadSheetsWrite(String username, String userId, String[] msg) throws GeneralSecurityException, IOException {
         final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
         final String spreadSheetsId = "15WBRurm9KULlsk-x3ULDQ5llf146D8XZ0HqzGRHfk1k"; // TODO: Add your Sheet id here
-        final String allRange = "Salary!A2:C";
+        final String allRange = "Salary!A2:E";
 
         Sheets service = new Sheets.Builder(HTTP_TRANSPORT, GoogleApiService.JSON_FACTORY, GoogleApiService.getCredentials(HTTP_TRANSPORT))
                 .setApplicationName(GoogleApiService.APPLICATION_NAME)
@@ -93,7 +93,7 @@ public class GoogleApiService {
         } else {
             ValueRange appendBody = new ValueRange()
                     .setValues(Arrays.asList(
-                            Arrays.asList(username, "https://t.me/" + userId, msg[1])
+                            Arrays.asList(username, "https://t.me/" + userId, Integer.parseInt(msg[1]), 10, "=$C*D%")
                     ));
             System.out.println("before res");
             AppendValuesResponse result =
@@ -105,13 +105,46 @@ public class GoogleApiService {
             System.out.println("after res" + msg[1]);
         }
 
-        return " p ";
+        return "append";
     }
+
+    private static String SpreadSheetsUpdate(int id, String username, String userId, String[] msg) throws GeneralSecurityException, IOException {
+        final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+        final String spreadSheetsId = "15WBRurm9KULlsk-x3ULDQ5llf146D8XZ0HqzGRHfk1k";
+        final String allRange = "Salary!C" + id + ":E";
+        Sheets service = new Sheets.Builder(HTTP_TRANSPORT, GoogleApiService.JSON_FACTORY, GoogleApiService.getCredentials(HTTP_TRANSPORT))
+                .setApplicationName(GoogleApiService.APPLICATION_NAME)
+                .build();
+        String ranges = "C"+id;
+        ValueRange response = service.spreadsheets().values()
+                .get(spreadSheetsId, ranges)
+                .execute();
+        Object values = response.getValues().get(0);
+        String val = values.toString();
+        String[] valCh = val.split("]");
+        val = valCh[0];
+        val = val.substring(1);
+        Integer val1 = Integer.parseInt(val);
+        System.out.println(val);
+        ValueRange body = new ValueRange().setValues(
+                Arrays.asList(
+                        Arrays.asList(val1 + Integer.valueOf(msg[1]), 10)
+                )
+        );
+        UpdateValuesResponse result =
+                service.spreadsheets().values().update(spreadSheetsId,allRange, body)
+                        .setValueInputOption("USER_ENTERED")
+                        .setIncludeValuesInResponse(true)
+                        .execute();
+        return "update";
+    }
+
+    // TODO получаем пользователя, находим в таблице, запоминаем строку, в инпут этой строки заносим msg[1], total =инпут + процент!
 
     public static String checkUser(String username, String userId, String[] msg)  throws GeneralSecurityException, IOException {
         final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
         final String spreadSheetsId = "15WBRurm9KULlsk-x3ULDQ5llf146D8XZ0HqzGRHfk1k";
-        final String allRange = "Salary!A2:E";
+        final String allRange = "Salary!B2:B";
         Sheets service = new Sheets.Builder(HTTP_TRANSPORT, GoogleApiService.JSON_FACTORY, GoogleApiService.getCredentials(HTTP_TRANSPORT))
                 .setApplicationName(GoogleApiService.APPLICATION_NAME)
                 .build();
@@ -120,21 +153,24 @@ public class GoogleApiService {
                 .execute();
         List<List<Object>> values = response.getValues();
         String resMsg = null;
+
+        int i = 1;
+
         if (values == null || values.isEmpty()) {
             resMsg = "No data found";
         } else {
             for (List row : values) {
-                if (String.valueOf(row.get(1)).contains(userId)) {
-                    resMsg = SpreadSheetsUpdate(username, userId, msg);
-                } else {
-                    resMsg = SpreadSheetsWrite(username, userId, msg);
+                if (String.valueOf(row.get(0)).contains(userId)) {
+                    i++;
+                    resMsg = SpreadSheetsUpdate(i, username, userId,msg);
                 }
+            }
+            if (i == 1) {
+                resMsg = SpreadSheetsWrite(username, userId, msg);
             }
         }
         return resMsg;
     }
 
-    private static String SpreadSheetsUpdate(String username, String userId, String[] msg) {
-        return "not working";
-    }
+
 }

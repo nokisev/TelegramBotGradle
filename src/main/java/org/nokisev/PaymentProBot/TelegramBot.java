@@ -6,6 +6,8 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
+import org.telegram.telegrambots.meta.api.objects.MaybeInaccessibleMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
@@ -86,6 +88,19 @@ public class TelegramBot extends TelegramLongPollingBot  {
                     break;
                 default:
                     break;
+            }
+        }
+        else if (update.hasCallbackQuery()) {
+            String callbackData = update.getCallbackQuery().getData();
+            long chatId = update.getCallbackQuery().getMessage().getChatId();
+
+            if (callbackData.equals("LEAD_BUTTON")) {
+                String text = "Попробуй написать /lead [число]";
+                sendMessage(chatId, text);
+            }
+            else {
+                String text = "Попробуй написать /mydata";
+                sendMessage(chatId, text);
             }
         }
     }
